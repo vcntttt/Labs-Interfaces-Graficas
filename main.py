@@ -4,39 +4,30 @@ import random
 import cv2
 
 class Box:
-    def __init__(self, width, height):
+    def __init__(self, width, height, imagenMascara, videoFrame):
         self.width = width
         self.height = height
+        self.videoFrame = videoFrame
+        self.frameActual = 0
+        self.bgImage = Image.open('assets/box.jpg').convert('L')
+        self.mask = Image.open(imagenMascara).convert('L')
+        self.image = self.initImage(self.videoFrame[self.frameActual])
         self.x = random.randint(0, self.width)
         self.y = random.randint(0, self.height)
-        # Inspirado en demo del profe caro (inspirado -> tremendo plagio)
         self.dX = 0
         self.dY = 0
         self.nR = 0
-        self.initImage()
 
-    def initImage(self):
-        # L -> Escala de grises
-        # Se vuelve a rgb para que sea compatible con pygame
-        pilImage = Image.open('assets/box.jpg').convert('L').convert('RGB')
-        # capaz me pasé con hacer todo en una linea
-        mode , size, data = pilImage.mode , pilImage.size, pilImage.tobytes()
-
-        self.image = pygame.image.fromstring(data, size, mode)
-
-    def imageBox(self, images):
-        imagen = images.convert("RGBA")
-        datos = imagen.getdata()
-        nDatos = []
-        for item in datos:
-            if item[:3] == (255,255,255):
-                nDatos.append((255,255,255,0))
-            else:
-                nDatos.append(item)
-        imagen.putdata(nDatos)
-        return imagen
+    def initImage(self, frame):
+        bgResize = self.bgImage.resize(frame.size)
+        mascaraResize = self.mask.resize(frame.size)
+        rgbFrame = frame.convert("RGB")
+        imagenFinal = Image.composite(rgbFrame, bgResize.convert('RGB'), mascaraResize)
+        return pygame.image.fromstring(imagenFinal.tobytes(), imagenFinal.size, 'RGB')
 
     def update(self):
+        self.frameActual = (self.frameActual + 1) % len(self.videoFrame)
+        self.image = self.initImage(self.videoFrame[self.frameActual])
         self.nR -= 1
         if self.nR < 0:
             self.nR = random.randint(100, 500)
@@ -89,23 +80,16 @@ class Game:
         self.screen = pygame.display.set_mode((self.width, self.height))
         self.background = pygame.image.load('assets/fondo.jpg').convert()
         self.yBackground = 0
-        self.boxes = [Box(self.MobileWidth, self.MobileHeight)
-                      for i in range(5)]
-
-    def run(self):
+        self.videoFrame = cargaDeFrames('assets/video_03.mp4', (320, 200))
         images = ["assets/planti_01.jpg",
                 "assets/planti_02.jpg",
                 "assets/planti_03.jpg",
                 "assets/planti_04.jpg",
                 "assets/planti_05.jpg"]
-        
-        for i, box in enumerate(self.boxes):
-            if i < len(images):
-                image = Image.open(images[i])
-                new_size = box.image.get_size()
-                resized_image = box.imageBox(image).resize(new_size, Image.Resampling.LANCZOS)
-                box.image = pygame.image.fromstring(resized_image.tobytes(), resized_image.size, resized_image.mode)
+        self.boxes = [Box(self.MobileWidth, self.MobileHeight, images[i], self.videoFrame)
+            for i in range(1,5)]
 
+    def run(self):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -116,25 +100,28 @@ class Game:
             self.screen.blit(self.background, (0, self.yBackground))
             self.screen.blit(
                 self.background, (0, self.yBackground - self.height))
-            
+
             for box in self.boxes:
                 box.update()
                 self.screen.blit(box.image, (box.x, box.y))
 
             pygame.display.flip()
-            pygame.time.delay(5)  # hay que dejarlo en 20 despues
+            pygame.time.delay(5)
 
-def load_video_frames(video_path, size):
-        cap = cv2.VideoCapture(video_path)
-        frames = []
-        success, frame = cap.read()
-        while success:
+def cargaDeFrames(rutaVideo, size, frameStep=3):
+    cap = cv2.VideoCapture(rutaVideo)
+    frames = []
+    success, frame = cap.read()
+    frameCount = 0
+    while success:
+        if frameCount % frameStep == 0:
             frame = cv2.resize(frame, size)
             pil_frame = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             frames.append(pil_frame)
-            success, frame = cap.read()
-        cap.release()
-        return frames
+        success, frame = cap.read()
+        frameCount += 1
+    cap.release()
+    return frames
     
 game = Game()
 game.run()
