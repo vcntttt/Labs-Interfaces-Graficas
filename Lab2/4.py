@@ -14,6 +14,6 @@ def h3(image):
 
 
 roi1 = initImage('roi1.png')
-print(h1(roi1))
-print(h2(roi1))
-print(h3(roi1))
+print(f"H1: {h1(roi1)}")
+print(f"H2: {h2(roi1)}")
+print(f"H3: {h3(roi1)}")

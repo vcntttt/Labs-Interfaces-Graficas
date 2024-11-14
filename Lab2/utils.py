@@ -7,7 +7,6 @@ def initImage(path):
     imgArray = np.array(img)
     # binarizar la imagen con respecto a 128
     imgArray = (imgArray > 128).astype(np.uint8)
-
     return imgArray
 
 
@@ -16,7 +15,7 @@ def moment(image, p, q):
     for y in range(image.shape[0]):
         for x in range(image.shape[1]):
             if (image[y, x] == 1):
-              m += (x**p) * (y**q)
+              m += ((x**p) * (y**q))
     return m
 
 
@@ -36,10 +35,8 @@ def centralMoment(image, p, q):
         for x in range(image.shape[1]):
             if (image[y, x] == 1):
               mu += ((x - cx)**p) * ((y - cy)**q) 
-
     return mu
 
 
 def momentoCentralNormalizado(image, p, q):
-    return centralMoment(image, p, q) * \
-        (1 / centralMoment(image, 0, 0)) ** ((p+q+2)/2)
+    return centralMoment(image, p, q) * (1 / centralMoment(image, 0, 0)) ** ((p+q+2)/2)
