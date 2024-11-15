@@ -1,7 +1,6 @@
 from PIL import Image
 import numpy as np
-
-
+    
 def initImage(path):
     img = Image.open(path).convert('L')  # carga en escala de grises
     imgArray = np.array(img)
