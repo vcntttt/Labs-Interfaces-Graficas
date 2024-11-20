@@ -1,3 +1,4 @@
+import io
 from flask import Flask, request
 from sqlite3 import connect
 from PIL import Image
@@ -29,8 +30,8 @@ def uploadIMG():
     if 'file' not in request.files:
         return 'Archivo no subido', 400
     
-    file = request.files['file']
-    image = Image.open(file.stream).convert('RGB')
+    file = request.files['img']
+    image = Image.open(file.read()).convert('RGB')
 
     r,g,b = image.split()
     grayscale = image.convert('L')
