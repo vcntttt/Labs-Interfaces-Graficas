@@ -13,7 +13,6 @@ imgPath = "ejercicio1/IMG"
 files = os.listdir(imgPath)
 files.sort()
 
-# sendIMG(f"{imgPath}/{files[0]}")
 for file in files:
     sendIMG(f"{imgPath}/{file}")
-    time.sleep(1) #-> 3 segundos
+    time.sleep(3) #-> 3 segundos
