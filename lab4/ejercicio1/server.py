@@ -27,22 +27,33 @@ def hello_world():
 
 @app.route("/img/upload", methods=['POST'])
 def uploadIMG():
-    if 'file' not in request.files:
+    if 'img' not in request.files:
         return 'Archivo no subido', 400
     
     file = request.files['img']
-    image = Image.open(file.read()).convert('RGB')
+    fByte = io.BytesIO(file.read()) # archivo binario temporal que tiene los datos de la img, necesario para que pillow pueda "abrir" el archivo de la imagen
+    image = Image.open(fByte).convert('RGB')
 
     r,g,b = image.split()
     grayscale = image.convert('L')
 
+    def toBytes(images): 
+        result = []
+        for img in images:
+            buffer = io.BytesIO() # crea un archivo binario en ram
+            img.save(buffer, format='png') # guarda img en buffer binario
+            result.append(buffer.getvalue()) # extraemos el contenido del buffer
+        return result
+    
+    original, red, green, blue, grayscale = toBytes([image, r, g, b, grayscale])
+    
     imgBytes = [
         file.filename,
-        image.tobytes(),
-        r.tobytes(),
-        g.tobytes(),
-        b.tobytes(),
-        grayscale.tobytes()
+        original,
+        red,
+        green,
+        blue,
+        grayscale
     ]
 
     connection = connect(dbPath)
