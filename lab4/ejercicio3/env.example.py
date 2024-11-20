@@ -1,0 +1,2 @@
+TELEPOT_TOKEN=""
+CHAT_ID=""
