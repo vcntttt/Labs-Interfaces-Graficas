@@ -2,8 +2,6 @@ from sqlite3 import connect
 import matplotlib.pyplot as plt
 import telepot
 from env import TELEPOT_TOKEN, CHAT_ID
-import matplotlib
-matplotlib.use('Qt5Agg') # esto es linux momento
 dbPathData = 'ejercicio2/contaminacion.db'
 
 def getData():
